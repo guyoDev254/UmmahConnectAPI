@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  phone       String?
+  password    String
+  avatarUrl   String?
+  otp       String?
+  otpExpiry DateTime?
+  role        String @default("MEMBER")
+  verified    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  events      Event[]      @relation("UserEvents")
+  donations   Donation[]
+  posts       Post[]
+  messages    Message[]
+}
+
+
+
+model Mosque {
+  id          String   @id @default(cuid())
+  name        String
+  location    String
+  contact     String?
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+
+  events      Event[]
+  donations   Donation[]
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  location    String
+  imageUrl    String?
+  mosqueId    String
+  createdById String
+
+  mosque      Mosque   @relation(fields: [mosqueId], references: [id])
+  createdBy   User     @relation("UserEvents", fields: [createdById], references: [id])
+}
+
+model Donation {
+  id          String   @id @default(cuid())
+  userId      String
+  mosqueId    String
+  amount      Float
+  method      DonationMethod
+  timestamp   DateTime @default(now())
+
+  user        User     @relation(fields: [userId], references: [id])
+  mosque      Mosque   @relation(fields: [mosqueId], references: [id])
+}
+
+enum DonationMethod {
+  MPESA
+  CARD
+  CASH
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  authorId  String
+
+  author    User     @relation(fields: [authorId], references: [id])
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  content   String
+  senderId  String
+  createdAt DateTime @default(now())
+
+  sender    User     @relation(fields: [senderId], references: [id])
+}
