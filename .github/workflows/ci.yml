@@ -1,0 +1,59 @@
+name: Docker Compose Build and Deploy
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password
+  POSTGRES_DB: median-db
+  DATABASE_URL: postgres://postgres:password@postgres:5432/median-db?schema=public
+  PORT: 8000
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:13.5
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Docker Compose
+      run: |
+        docker compose version
+
+    - name: Build and start containers
+      run: |
+        docker compose up -d --build
+        
+    - name: Verify containers are running
+      run: |
+        docker ps
+        docker compose ps
+
+    - name: Run Prisma migrations
+      run: |
+        docker compose exec app npx prisma migrate deploy
+        docker compose exec app npx prisma generate
+
+    - name: Run tests (if you have any)
+      run: |
+        docker compose exec app npm test
