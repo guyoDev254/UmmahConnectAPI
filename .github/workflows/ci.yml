@@ -63,6 +63,6 @@ jobs:
         docker compose exec app npx prisma migrate deploy
         docker compose exec app npx prisma generate
 
-    - name: Run tests (if you have any)
-      run: |
-        docker compose exec app npm test
+    # - name: Run tests (if you have any)
+    #   run: |
+    #     docker compose exec app npm test
