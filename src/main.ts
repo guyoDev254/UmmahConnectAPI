@@ -7,4 +7,8 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({whitelist: true}));
   await app.listen(process.env.PORT ?? 8000);
 }
-bootstrap();
+bootstrap().catch(err => {
+  console.error('Error during application bootstrap:', err);
+}).then(() => {
+  console.log(`Application is running on: http://localhost:${process.env.PORT ?? 8000}`);
+});
