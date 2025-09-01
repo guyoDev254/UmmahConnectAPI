@@ -9,6 +9,8 @@ RUN npm install
 # Install Prisma CLI
 RUN npm install prisma @prisma/client
 
+
+
 # Copy the rest of the app
 COPY . .
 
